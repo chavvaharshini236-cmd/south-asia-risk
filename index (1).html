@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>South Asia Risk Dashboard | Chavva Harshini</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0b0f1a;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8edf5;
+  --muted: #7a8ba0;
+  --accent: #e8b04b;
+  --accent2: #4b8fe8;
+  --danger: #e85c4b;
+  --warn: #e8a04b;
+  --ok: #4be8a0;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --sans: 'Outfit', sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Subtle grid texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 24px 60px; }
+
+/* ── HEADER ── */
+header {
+  padding: 32px 0 24px;
+  border-bottom: 1px solid var(--border2);
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.header-left {}
+
+.kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kicker::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--accent);
+}
+
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.header-sub {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 520px;
+}
+
+.header-meta {
+  text-align: right;
+}
+
+.last-updated {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.author-tag {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.author-tag a {
+  color: var(--accent2);
+  text-decoration: none;
+}
+
+.author-tag a:hover { text-decoration: underline; }
+
+/* ── OVERALL RISK SCORE ── */
+.risk-hero {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.risk-score-block {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.score-ring {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+
+.score-ring svg { width: 88px; height: 88px; transform: rotate(-90deg); }
+
+.score-ring circle {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+.score-ring .bg-circle { stroke: rgba(255,255,255,0.06); }
+.score-ring .fg-circle {
+  stroke: var(--warn);
+  stroke-dasharray: 226;
+  stroke-dashoffset: 68; /* 70/100 fill */
+  transition: stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1);
+}
+
+.score-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-num {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--warn);
+  line-height: 1;
+}
+
+.score-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.score-meta h2 {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+.score-meta p {
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 220px;
+}
+
+.risk-divider {
+  width: 1px;
+  height: 60px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.risk-indicators {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ind-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.ind-val {
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.ind-change {
+  font-size: 10px;
+}
+
+.up { color: var(--danger); }
+.down { color: var(--ok); }
+.flat { color: var(--muted); }
+
+/* ── SECTION LABEL ── */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 32px 0 16px;
+}
+
+.section-head h3 {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.section-head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── GRID LAYOUTS ── */
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+
+/* ── COUNTRY CARDS ── */
+.country-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  transition: border-color .2s, transform .2s;
+  cursor: default;
+}
+
+.country-card:hover {
+  border-color: var(--border2);
+  transform: translateY(-2px);
+}
+
+.cc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.cc-flag {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.risk-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.rb-critical { background: rgba(232,92,75,.15); color: #e85c4b; border: 1px solid rgba(232,92,75,.3); }
+.rb-high     { background: rgba(232,160,75,.15); color: #e8a04b; border: 1px solid rgba(232,160,75,.3); }
+.rb-medium   { background: rgba(232,184,75,.15); color: #e8b84b; border: 1px solid rgba(232,184,75,.3); }
+.rb-elevated { background: rgba(75,143,232,.15); color: #4b8fe8; border: 1px solid rgba(75,143,232,.3); }
+.rb-moderate { background: rgba(75,232,160,.15); color: #4be8a0; border: 1px solid rgba(75,232,160,.3); }
+
+.cc-name {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 2px;
+}
+
+.cc-desc {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.cc-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metric-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-name {
+  font-size: 11px;
+  color: var(--muted);
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.metric-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.metric-bar {
+  height: 4px;
+  border-radius: 2px;
+  transition: width 1.2s cubic-bezier(.4,0,.2,1);
+}
+
+.bar-red    { background: var(--danger); }
+.bar-orange { background: var(--warn); }
+.bar-yellow { background: var(--accent); }
+.bar-blue   { background: var(--accent2); }
+.bar-green  { background: var(--ok); }
+
+.metric-score {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  width: 26px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── EVENT LOG ── */
+.event-log {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.event-row {
+  display: flex;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+  transition: background .15s;
+}
+
+.event-row:last-child { border-bottom: none; }
+.event-row:hover { background: rgba(255,255,255,.02); }
+
+.event-date {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  padding-top: 2px;
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.ed-red    { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+.ed-orange { background: var(--warn); }
+.ed-yellow { background: var(--accent); }
+.ed-blue   { background: var(--accent2); }
+.ed-green  { background: var(--ok); }
+
+.event-body { flex: 1; }
+
+.event-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.event-detail {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.event-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  white-space: nowrap;
+  margin-top: 2px;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+/* ── CHART CARD ── */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.chart-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.chart-sub {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.chart-wrap {
+  position: relative;
+  height: 180px;
+}
+
+/* ── RISK DIMENSION TABLE ── */
+.dim-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.dim-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  transition: background .15s;
+}
+
+.dim-row:last-child { border-bottom: none; }
+.dim-row:hover { background: rgba(255,255,255,.02); }
+
+.dim-icon {
+  font-size: 16px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.dim-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+}
+
+.dim-bar-wrap {
+  width: 140px;
+  height: 5px;
+  background: rgba(255,255,255,.06);
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.dim-bar {
+  height: 5px;
+  border-radius: 3px;
+}
+
+.dim-score {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.dim-trend {
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ── STAT CHIPS ── */
+.stat-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.sc-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.sc-val {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.sc-sub {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* ── CHINA BRI MAP ── */
+.bri-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.bri-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.bri-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bri-country {
+  font-size: 12px;
+  color: var(--text);
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.bri-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.bri-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--accent2);
+  opacity: .8;
+}
+
+.bri-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── METHODOLOGY ── */
+.methodology {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-top: 32px;
+}
+
+.method-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.method-body {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.method-body a {
+  color: var(--accent2);
+  text-decoration: none;
+}
+
+.method-body a:hover { text-decoration: underline; }
+
+.sources-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.source-pill {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-left {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.footer-left strong { color: var(--text); }
+
+.footer-right {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* Animate bars on load */
+.metric-bar, .dim-bar, .bri-bar {
+  width: 0 !important;
+}
+
+.animated .metric-bar,
+.animated .dim-bar,
+.animated .bri-bar {
+  width: var(--bar-w) !important;
+}
+
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <div class="kicker">Geopolitical Risk Intelligence</div>
+    <h1>South Asia <em>Risk Matrix</em><br>India's Neighbourhood, 2025–26</h1>
+    <div class="header-sub">An analyst-grade assessment of political, security, and economic risk vectors across South Asia, with a focus on India's strategic environment.</div>
+  </div>
+  <div class="header-meta">
+    <div class="last-updated">Last updated: April 2026</div>
+    <div class="author-tag">
+      Chavva Harshini — Policy Analyst<br>
+      <a href="https://chavvaharshini236.medium.com/" target="_blank">Medium</a> &nbsp;·&nbsp;
+      <a href="mailto:chavvaharshini236@gmail.com">Contact</a>
+    </div>
+  </div>
+</header>
+
+<!-- OVERALL RISK HERO -->
+<div class="risk-hero">
+  <div class="risk-score-block">
+    <div class="score-ring">
+      <svg viewBox="0 0 88 88"><circle class="bg-circle" cx="44" cy="44" r="36"/><circle class="fg-circle" cx="44" cy="44" r="36"/></svg>
+      <div class="score-center">
+        <div class="score-num">72</div>
+        <div class="score-label">/100</div>
+      </div>
+    </div>
+    <div class="score-meta">
+      <h2>Regional Risk Score</h2>
+      <p>Elevated — highest since 2019 Pulwama crisis. Post-Pahalgam environment remains unresolved.</p>
+    </div>
+  </div>
+  <div class="risk-divider"></div>
+  <div class="risk-indicators">
+    <div class="indicator">
+      <div class="ind-label">India–Pak Tension</div>
+      <div class="ind-val up">CRITICAL</div>
+      <div class="ind-change up">▲ Post-Op Sindoor</div>
+    </div>
+    <div class="indicator">
+      <div class="ind-label">India–China LAC</div>
+      <div class="ind-val" style="color:var(--warn)">ELEVATED</div>
+      <div class="ind-change flat">→ Managed Thaw</div>
+    </div>
+    <div class="indicator">
+      <div class="ind-label">Bangladesh</div>
+      <div class="ind-val" style="color:var(--accent)">HIGH</div>
+      <div class="ind-change up">▲ Transition Risk</div>
+    </div>
+    <div class="indicator">
+      <div class="ind-label">Nepal</div>
+      <div class="ind-val" style="color:var(--accent)">HIGH</div>
+      <div class="ind-change up">▲ Govt Collapsed '25</div>
+    </div>
+    <div class="indicator">
+      <div class="ind-label">Sri Lanka</div>
+      <div class="ind-val" style="color:var(--ok)">MODERATE</div>
+      <div class="ind-change down">▼ Recovery Underway</div>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY STATS -->
+<div class="grid-4">
+  <div class="stat-chip">
+    <div class="sc-label">Flashpoints Active</div>
+    <div class="sc-val">4</div>
+    <div class="sc-sub">India-Pak, Bangladesh transition, Nepal instability, Myanmar spillover</div>
+  </div>
+  <div class="stat-chip">
+    <div class="sc-label">India-Pak: Op Sindoor</div>
+    <div class="sc-val">May '25</div>
+    <div class="sc-sub">9 terror sites struck. Ceasefire held from May 10 — fragile status</div>
+  </div>
+  <div class="stat-chip">
+    <div class="sc-label">China BRI Exposure</div>
+    <div class="sc-val">4/6</div>
+    <div class="sc-sub">Neighbours with active BRI investments. India increasingly encircled.</div>
+  </div>
+  <div class="stat-chip">
+    <div class="sc-label">Govts Fell 2022–25</div>
+    <div class="sc-val">3</div>
+    <div class="sc-sub">Sri Lanka (2022), Bangladesh (2024), Nepal (2025) — youth-led uprisings</div>
+  </div>
+</div>
+
+<!-- COUNTRY RISK CARDS -->
+<div class="section-head"><h3>Country Risk Profiles</h3></div>
+
+<div class="grid-3" id="countryCards">
+
+  <!-- INDIA-PAKISTAN -->
+  <div class="country-card">
+    <div class="cc-header">
+      <div>
+        <div style="display:flex;gap:4px;font-size:24px;">🇮🇳🇵🇰</div>
+      </div>
+      <span class="risk-badge rb-critical">Critical</span>
+    </div>
+    <div class="cc-name">India–Pakistan</div>
+    <div class="cc-desc">Pahalgam attack (26 killed, Apr 22) triggered Operation Sindoor (May 7). India struck 9 terror targets in Pakistan. Ceasefire May 10 — uneasy. Indus Waters Treaty suspended. Worst military escalation since 1971.</div>
+    <div class="cc-metrics">
+      <div class="metric-row">
+        <div class="metric-name">Military tension</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-red" style="--bar-w:94%"></div></div>
+        <div class="metric-score">94</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Diplomatic risk</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-red" style="--bar-w:88%"></div></div>
+        <div class="metric-score">88</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Nuclear concern</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:65%"></div></div>
+        <div class="metric-score">65</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Trade impact</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:72%"></div></div>
+        <div class="metric-score">72</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INDIA-CHINA -->
+  <div class="country-card">
+    <div class="cc-header">
+      <div style="display:flex;gap:4px;font-size:24px;">🇮🇳🇨🇳</div>
+      <span class="risk-badge rb-elevated">Elevated</span>
+    </div>
+    <div class="cc-name">India–China</div>
+    <div class="cc-desc">2024 LAC patrol agreement initiated diplomatic thaw. New Ladakh airbase near LAC signals continued military posture. BRI encirclement accelerating: China now dominant partner in Nepal, Bangladesh, Pakistan, Sri Lanka.</div>
+    <div class="cc-metrics">
+      <div class="metric-row">
+        <div class="metric-name">Border friction</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-blue" style="--bar-w:55%"></div></div>
+        <div class="metric-score">55</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Economic rivalry</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:78%"></div></div>
+        <div class="metric-score">78</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">BRI encirclement</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:80%"></div></div>
+        <div class="metric-score">80</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Diplomatic tension</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-yellow" style="--bar-w:52%"></div></div>
+        <div class="metric-score">52</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BANGLADESH -->
+  <div class="country-card">
+    <div class="cc-header">
+      <div style="font-size:24px;">🇧🇩</div>
+      <span class="risk-badge rb-high">High</span>
+    </div>
+    <div class="cc-name">Bangladesh</div>
+    <div class="cc-desc">Sheikh Hasina ousted Aug 2024 after Gen Z uprising. Interim government in place. Elections due Feb 2026. Rising Islamist influence (Jamaat). India's $7.9bn credit lines and connectivity corridors now under strain.</div>
+    <div class="cc-metrics">
+      <div class="metric-row">
+        <div class="metric-name">Political stability</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:71%"></div></div>
+        <div class="metric-score">71</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">India alignment</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-red" style="--bar-w:38%"></div></div>
+        <div class="metric-score" style="color:var(--danger)">38</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">China pivot risk</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:68%"></div></div>
+        <div class="metric-score">68</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Economic fragility</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-yellow" style="--bar-w:60%"></div></div>
+        <div class="metric-score">60</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEPAL -->
+  <div class="country-card">
+    <div class="cc-header">
+      <div style="font-size:24px;">🇳🇵</div>
+      <span class="risk-badge rb-high">High</span>
+    </div>
+    <div class="cc-name">Nepal</div>
+    <div class="cc-desc">PM KP Sharma Oli resigned Sep 2025 after Gen Z social media protests. Nepal has had 14 governments since 2008 — avg tenure 16 months. China's infrastructure dominance growing. India struggling to retain leverage.</div>
+    <div class="cc-metrics">
+      <div class="metric-row">
+        <div class="metric-name">Govt stability</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-red" style="--bar-w:82%"></div></div>
+        <div class="metric-score">82</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">India influence</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:42%"></div></div>
+        <div class="metric-score">42</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">China engagement</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-blue" style="--bar-w:70%"></div></div>
+        <div class="metric-score">70</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Youth unrest risk</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:74%"></div></div>
+        <div class="metric-score">74</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SRI LANKA -->
+  <div class="country-card">
+    <div class="cc-header">
+      <div style="font-size:24px;">🇱🇰</div>
+      <span class="risk-badge rb-moderate">Moderate</span>
+    </div>
+    <div class="cc-name">Sri Lanka</div>
+    <div class="cc-desc">NPP government (Dissanayake) showing reform momentum post-2022 collapse. IMF recovery on track. India deepening engagement in energy and infrastructure. Defence links with both India and Pakistan being maintained.</div>
+    <div class="cc-metrics">
+      <div class="metric-row">
+        <div class="metric-name">Economic recovery</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-green" style="--bar-w:62%"></div></div>
+        <div class="metric-score" style="color:var(--ok)">62</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Political risk</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-yellow" style="--bar-w:38%"></div></div>
+        <div class="metric-score">38</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">India alignment</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-green" style="--bar-w:68%"></div></div>
+        <div class="metric-score" style="color:var(--ok)">68</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Debt overhang</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:58%"></div></div>
+        <div class="metric-score">58</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MYANMAR -->
+  <div class="country-card">
+    <div class="cc-header">
+      <div style="font-size:24px;">🇲🇲</div>
+      <span class="risk-badge rb-high">High</span>
+    </div>
+    <div class="cc-name">Myanmar</div>
+    <div class="cc-desc">Civil war ongoing since 2021 coup. Refugee flows into Mizoram and Manipur. India's Neighbourhood First policy strained by junta engagement. China and India both maintain ties with military — creating strategic ambiguity.</div>
+    <div class="cc-metrics">
+      <div class="metric-row">
+        <div class="metric-name">Conflict intensity</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-red" style="--bar-w:84%"></div></div>
+        <div class="metric-score">84</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">India spillover</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:65%"></div></div>
+        <div class="metric-score">65</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Refugee pressure</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-orange" style="--bar-w:70%"></div></div>
+        <div class="metric-score">70</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">Humanitarian risk</div>
+        <div class="metric-bar-wrap"><div class="metric-bar bar-red" style="--bar-w:88%"></div></div>
+        <div class="metric-score">88</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- RISK DIMENSIONS + CHART ROW -->
+<div class="section-head"><h3>India's Strategic Risk Dimensions</h3></div>
+<div class="grid-2">
+
+  <div class="dim-card">
+    <div class="dim-row">
+      <div class="dim-icon">⚔️</div>
+      <div class="dim-name">Military / Border Security</div>
+      <div class="dim-bar-wrap"><div class="dim-bar bar-red" style="--bar-w:88%; background:var(--danger)"></div></div>
+      <div class="dim-score" style="color:var(--danger)">88</div>
+      <div class="dim-trend up">▲</div>
+    </div>
+    <div class="dim-row">
+      <div class="dim-icon">🌐</div>
+      <div class="dim-name">Diplomatic Influence (Neighbourhood)</div>
+      <div class="dim-bar-wrap"><div class="dim-bar" style="--bar-w:42%; background:var(--warn)"></div></div>
+      <div class="dim-score" style="color:var(--warn)">42</div>
+      <div class="dim-trend up">▼</div>
+    </div>
+    <div class="dim-row">
+      <div class="dim-icon">⚡</div>
+      <div class="dim-name">Energy / Supply Chain Risk</div>
+      <div class="dim-bar-wrap"><div class="dim-bar" style="--bar-w:64%; background:var(--accent)"></div></div>
+      <div class="dim-score" style="color:var(--accent)">64</div>
+      <div class="dim-trend flat">→</div>
+    </div>
+    <div class="dim-row">
+      <div class="dim-icon">🌊</div>
+      <div class="dim-name">Indian Ocean Maritime Security</div>
+      <div class="dim-bar-wrap"><div class="dim-bar" style="--bar-w:70%; background:var(--warn)"></div></div>
+      <div class="dim-score" style="color:var(--warn)">70</div>
+      <div class="dim-trend up">▲</div>
+    </div>
+    <div class="dim-row">
+      <div class="dim-icon">🌡️</div>
+      <div class="dim-name">Climate / Water Security Risk</div>
+      <div class="dim-bar-wrap"><div class="dim-bar" style="--bar-w:76%; background:var(--warn)"></div></div>
+      <div class="dim-score" style="color:var(--warn)">76</div>
+      <div class="dim-trend up">▲</div>
+    </div>
+    <div class="dim-row">
+      <div class="dim-icon">📡</div>
+      <div class="dim-name">Information / Hybrid Warfare</div>
+      <div class="dim-bar-wrap"><div class="dim-bar" style="--bar-w:72%; background:var(--warn)"></div></div>
+      <div class="dim-score" style="color:var(--warn)">72</div>
+      <div class="dim-trend up">▲</div>
+    </div>
+    <div class="dim-row">
+      <div class="dim-icon">💰</div>
+      <div class="dim-name">Economic Interdependence (Leverage)</div>
+      <div class="dim-bar-wrap"><div class="dim-bar" style="--bar-w:58%; background:var(--accent2)"></div></div>
+      <div class="dim-score" style="color:var(--accent2)">58</div>
+      <div class="dim-trend flat">→</div>
+    </div>
+    <div class="dim-row">
+      <div class="dim-icon">🏘️</div>
+      <div class="dim-name">Refugee / Migration Pressure</div>
+      <div class="dim-bar-wrap"><div class="dim-bar" style="--bar-w:68%; background:var(--warn)"></div></div>
+      <div class="dim-score" style="color:var(--warn)">68</div>
+      <div class="dim-trend up">▲</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px;">
+    <div class="chart-card">
+      <div class="chart-title">Regional Risk Score Trend</div>
+      <div class="chart-sub">India's aggregate neighbourhood risk index, 2020–2026</div>
+      <div class="chart-wrap">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+    <div class="bri-card">
+      <div class="chart-title">China's BRI Footprint — South Asia</div>
+      <div class="chart-sub">Estimated committed investment, USD billions (OECD / ADB data)</div>
+      <div class="bri-list" id="briList">
+        <div class="bri-row">
+          <div class="bri-country">Pakistan</div>
+          <div class="bri-bar-wrap"><div class="bri-bar" style="--bar-w:95%"></div></div>
+          <div class="bri-val">$62 bn (CPEC)</div>
+        </div>
+        <div class="bri-row">
+          <div class="bri-country">Bangladesh</div>
+          <div class="bri-bar-wrap"><div class="bri-bar" style="--bar-w:35%"></div></div>
+          <div class="bri-val">$21 bn</div>
+        </div>
+        <div class="bri-row">
+          <div class="bri-country">Sri Lanka</div>
+          <div class="bri-bar-wrap"><div class="bri-bar" style="--bar-w:22%"></div></div>
+          <div class="bri-val">$14 bn</div>
+        </div>
+        <div class="bri-row">
+          <div class="bri-country">Nepal</div>
+          <div class="bri-bar-wrap"><div class="bri-bar" style="--bar-w:10%"></div></div>
+          <div class="bri-val">$6.5 bn</div>
+        </div>
+        <div class="bri-row">
+          <div class="bri-country">Myanmar</div>
+          <div class="bri-bar-wrap"><div class="bri-bar" style="--bar-w:14%"></div></div>
+          <div class="bri-val">$9 bn</div>
+        </div>
+        <div class="bri-row">
+          <div class="bri-country">Maldives</div>
+          <div class="bri-bar-wrap"><div class="bri-bar" style="--bar-w:5%"></div></div>
+          <div class="bri-val">$1.4 bn</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- EVENT LOG -->
+<div class="section-head"><h3>Key Events Timeline — 2024–2026</h3></div>
+<div class="event-log">
+  <div class="event-row">
+    <div class="event-date">Apr 2026</div>
+    <div class="event-dot ed-orange"></div>
+    <div class="event-body">
+      <div class="event-title">India-Pakistan ceasefire holding — status under review</div>
+      <div class="event-detail">Post-Op Sindoor ceasefire (May 10 '25) nominally holding. Both sides resume commercial flights. Diplomatic normalization stalled; IWT suspension continues. Kashmir LOC remains heavily militarized.</div>
+      <span class="event-tag">India–Pakistan</span>
+    </div>
+  </div>
+  <div class="event-row">
+    <div class="event-date">May 2025</div>
+    <div class="event-dot ed-red"></div>
+    <div class="event-body">
+      <div class="event-title">Operation Sindoor — India strikes 9 terror sites in Pakistan</div>
+      <div class="event-detail">India's largest military action since 1971 launched May 7 in response to Pahalgam attack (Apr 22, 26 killed). Strikes targeted LeT (Muridke) and JeM (Bahawalpur) infrastructure. US-mediated ceasefire reached May 10.</div>
+      <span class="event-tag">Military</span>
+    </div>
+  </div>
+  <div class="event-row">
+    <div class="event-date">Sep 2025</div>
+    <div class="event-dot ed-orange"></div>
+    <div class="event-body">
+      <div class="event-title">Nepal PM Oli resigns — 14th government collapse since 2008</div>
+      <div class="event-detail">Gen Z protests over social media ban forced PM KP Sharma Oli's resignation. Interim leader Sushila Karki navigating path to elections (Mar 2026). China's infrastructure presence in Nepal remains dominant.</div>
+      <span class="event-tag">Nepal</span>
+    </div>
+  </div>
+  <div class="event-row">
+    <div class="event-date">Apr 2025</div>
+    <div class="event-dot ed-red"></div>
+    <div class="event-body">
+      <div class="event-title">Pahalgam attack — 26 killed in Kashmir, worst since 2019</div>
+      <div class="event-detail">Militants targeted Hindu tourists in Pahalgam, J&K. India suspended Indus Waters Treaty, expelled Pakistani diplomats, closed Attari border. IB intelligence failures raised accountability questions.</div>
+      <span class="event-tag">Kashmir</span>
+    </div>
+  </div>
+  <div class="event-row">
+    <div class="event-date">Jan 2026</div>
+    <div class="event-dot ed-blue"></div>
+    <div class="event-body">
+      <div class="event-title">The Diplomat: India losing diplomatic initiative across neighbourhood</div>
+      <div class="event-detail">Analysis documents structural decline in India's soft power — Neighbourhood First policy not delivering. Bangladesh, Nepal, Sri Lanka all moving toward China as primary development partner despite Indian LOCs.</div>
+      <span class="event-tag">Diplomacy</span>
+    </div>
+  </div>
+  <div class="event-row">
+    <div class="event-date">Aug 2024</div>
+    <div class="event-dot ed-orange"></div>
+    <div class="event-body">
+      <div class="event-title">Sheikh Hasina ousted — Bangladesh Gen Z revolution</div>
+      <div class="event-detail">Mass student protests over public sector quota system toppled 15-year Hasina government. Interim administration under Muhammad Yunus. India lost key strategic ally in Dhaka. Islamist forces gaining ground organizationally.</div>
+      <span class="event-tag">Bangladesh</span>
+    </div>
+  </div>
+  <div class="event-row">
+    <div class="event-date">Oct 2024</div>
+    <div class="event-dot ed-green"></div>
+    <div class="event-body">
+      <div class="event-title">India–China LAC patrol agreement — border thaw begins</div>
+      <div class="event-detail">Diplomatic agreement on border patrol in disputed territories initiated normalisation. Full bilateral normalisation remains distant due to economic competition and strategic mistrust. India constructing new Ladakh airbase near LAC.</div>
+      <span class="event-tag">India–China</span>
+    </div>
+  </div>
+  <div class="event-row">
+    <div class="event-date">Sep 2024</div>
+    <div class="event-dot ed-green"></div>
+    <div class="event-body">
+      <div class="event-title">Sri Lanka: NPP government elected — reform credibility improving</div>
+      <div class="event-detail">President Dissanayake's NPP marks first non-establishment government. Anti-corruption mandate, IMF cooperation on track. India deepening energy and infrastructure engagement — strategic opportunity in Indian Ocean.</div>
+      <span class="event-tag">Sri Lanka</span>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYST NOTE -->
+<div class="section-head"><h3>Analyst Assessment</h3></div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 26px;">
+  <p style="font-family:var(--serif);font-size:17px;font-weight:400;line-height:1.7;color:var(--text);margin-bottom:12px;">South Asia in 2025–26 is not experiencing a temporary spike in instability — it is undergoing a structural realignment. Three governments have fallen to youth-led uprisings since 2022. India's Neighbourhood First policy is losing ground to China's infrastructure diplomacy across every border except Bhutan. The India-Pakistan axis reached its most dangerous inflection point in decades with Operation Sindoor, and the post-ceasefire equilibrium remains brittle.</p>
+  <p style="font-size:12px;color:var(--muted);line-height:1.7;">The region's underlying drivers — youth unemployment, democratic deficits, climate stress, and debt vulnerability — are structural, not cyclical. Policy responses that treat these as episodic crises will repeatedly miss the pattern. India's strategic response must address the gap between connectivity promises and connectivity delivery; between the rhetoric of Neighbourhood First and the reality of declining influence scores across its own backyard.</p>
+  <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--muted);">— Chavva Harshini, April 2026 · Policy Analyst · M.A. Political Science, Bangalore University (Top 5%)</div>
+</div>
+
+<!-- METHODOLOGY -->
+<div class="methodology">
+  <div class="method-title">Methodology &amp; Sources</div>
+  <div class="method-body">
+    Risk scores are analyst-assessed composite indices (0–100) drawing on open-source data, primary government documents, and peer-reviewed geopolitical reporting. This dashboard applies an OSINT methodology: all claims are sourced from publicly available, verifiable records. Scores represent qualitative risk levels as of April 2026 and are updated periodically.
+  </div>
+  <div class="sources-grid">
+    <span class="source-pill">The Diplomat</span>
+    <span class="source-pill">ISPI / CSIS</span>
+    <span class="source-pill">Library of Congress CRS</span>
+    <span class="source-pill">PIB India (Op Sindoor)</span>
+    <span class="source-pill">Asia Society</span>
+    <span class="source-pill">Lowy Institute</span>
+    <span class="source-pill">Foreign Policy</span>
+    <span class="source-pill">GIS Reports</span>
+    <span class="source-pill">Wikipedia / Primary</span>
+    <span class="source-pill">ADB South Asia Report 2025</span>
+    <span class="source-pill">War on the Rocks</span>
+    <span class="source-pill">IndiaSpend</span>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <strong>Chavva Harshini</strong> · Policy Analyst Portfolio ·
+    <a href="https://chavvaharshini236.medium.com/" target="_blank" style="color:var(--accent2);text-decoration:none;">Medium</a> ·
+    <a href="mailto:chavvaharshini236@gmail.com" style="color:var(--accent2);text-decoration:none;">chavvaharshini236@gmail.com</a>
+  </div>
+  <div class="footer-right">Built with open-source data · GitHub Pages · April 2026</div>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+// Animate bars after load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.metric-bar, .dim-bar, .bri-bar').forEach(el => {
+      el.style.width = el.style.getPropertyValue('--bar-w') ||
+        getComputedStyle(el).getPropertyValue('--bar-w');
+      el.style.transition = 'width 1.2s cubic-bezier(.4,0,.2,1)';
+    });
+    document.getElementById('countryCards').classList.add('animated');
+  }, 200);
+
+  // Trend chart
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['2020','2021','2022','2023','2024','2025','2026'],
+      datasets: [{
+        label: 'Regional Risk Score',
+        data: [48, 55, 62, 58, 63, 78, 72],
+        borderColor: '#e8b04b',
+        backgroundColor: 'rgba(232,176,75,0.08)',
+        borderWidth: 2,
+        pointBackgroundColor: '#e8b04b',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        tension: 0.4,
+        fill: true,
+      },{
+        label: 'India–Pak Tension',
+        data: [40, 45, 50, 55, 58, 94, 75],
+        borderColor: '#e85c4b',
+        backgroundColor: 'rgba(232,92,75,0.04)',
+        borderWidth: 1.5,
+        pointBackgroundColor: '#e85c4b',
+        pointRadius: 3,
+        tension: 0.4,
+        fill: false,
+        borderDash: [4,3],
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#7a8ba0',
+            font: { family: 'DM Mono', size: 10 },
+            boxWidth: 14,
+            padding: 12,
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1a2235',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#e8edf5',
+          bodyColor: '#7a8ba0',
+          titleFont: { family: 'DM Mono', size: 11 },
+          bodyFont: { family: 'DM Mono', size: 10 },
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#7a8ba0', font: { family: 'DM Mono', size: 10 } },
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          border: { color: 'rgba(255,255,255,0.07)' }
+        },
+        y: {
+          min: 30, max: 100,
+          ticks: { color: '#7a8ba0', font: { family: 'DM Mono', size: 10 } },
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          border: { color: 'rgba(255,255,255,0.07)' }
+        }
+      }
+    }
+  });
+
+  // BRI bars animate
+  setTimeout(() => {
+    document.querySelectorAll('.bri-bar').forEach(el => {
+      const w = el.style.getPropertyValue('--bar-w') ||
+        getComputedStyle(el).getPropertyValue('--bar-w');
+      el.style.width = w;
+    });
+  }, 400);
+});
+
+// Apply CSS var widths as actual widths for animation
+document.querySelectorAll('.metric-bar, .dim-bar').forEach(el => {
+  const w = el.style.cssText.match(/--bar-w:\s*([^;]+)/);
+  if (w) {
+    el.dataset.targetW = w[1].trim();
+    el.style.width = '0%';
+  }
+});
+
+setTimeout(() => {
+  document.querySelectorAll('.metric-bar, .dim-bar').forEach(el => {
+    if (el.dataset.targetW) {
+      el.style.transition = 'width 1.2s cubic-bezier(.4,0,.2,1)';
+      el.style.width = el.dataset.targetW;
+    }
+  });
+  document.querySelectorAll('.bri-bar').forEach(el => {
+    const w = el.style.cssText.match(/--bar-w:\s*([^;]+)/);
+    if (w) {
+      el.style.width = '0%';
+      setTimeout(() => {
+        el.style.transition = 'width 1.2s cubic-bezier(.4,0,.2,1)';
+        el.style.width = w[1].trim();
+      }, 100);
+    }
+  });
+}, 300);
+</script>
+
+</body>
+</html>
