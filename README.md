@@ -44,17 +44,6 @@ Built using an **OSINT methodology** — all data sourced from publicly verifiab
 
 ---
 
-## How to Host on GitHub Pages
-
-1. Fork or clone this repository
-2. Go to **Settings → Pages**
-3. Set source to **main branch / root**
-4. Your dashboard will be live at `https://[username].github.io/[repo-name]/`
-
-No build step required. Pure HTML/CSS/JS — works directly from GitHub Pages.
-
----
-
 ## Methodology Note
 
 Risk scores (0–100) are analyst-assessed composite indices. They are **not algorithmic outputs** — they reflect qualitative judgements grounded in source triangulation across multiple credible institutions. This mirrors the analytical methodology used by major risk consultancies (Control Risks, Verisk Maplecroft, Oxford Analytica).
