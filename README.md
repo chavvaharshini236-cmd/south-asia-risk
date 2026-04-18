@@ -1,7 +1,7 @@
 # South Asia Risk Dashboard
 ### India's Neighbourhood — Geopolitical Risk Matrix 2025–26
 
-**Live site:** `https://[your-github-username].github.io/south-asia-risk-dashboard/`
+**Live site:** `[https://[your-github-username].github.io/south-asia-risk-dashboard/](https://chavvaharshini236-cmd.github.io/south-asia-risk/)`
 
 A policy analyst portfolio project by **Chavva Harshini** — M.A. Political Science, Bangalore University (Top 5%, Class of 2024).
 
